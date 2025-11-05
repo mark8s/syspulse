@@ -78,6 +78,23 @@ body {
     animation: none;
 }
 
+.control-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(52, 152, 219, 0.1));
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.4), rgba(52, 152, 219, 0.2));
+    border-color: rgba(52, 152, 219, 0.5);
+    transform: translateY(-2px);
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
@@ -108,6 +125,41 @@ body {
     gap: 10px;
     padding-bottom: 10px;
     border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.card-header {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+    justify-content: space-between;
+}
+
+.card-header:hover {
+    color: var(--success);
+}
+
+.collapse-icon {
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+    color: var(--primary);
+}
+
+.card-header.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.card-content {
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    max-height: 5000px;
+    opacity: 1;
+}
+
+.card-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .section-hint {

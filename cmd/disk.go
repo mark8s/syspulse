@@ -12,10 +12,10 @@ import (
 var diskCmd = &cobra.Command{
 	Use:   "disk",
 	Short: "显示磁盘信息 (类似 df -h)",
-	Long:  "显示所有磁盘分区的使用情况，输出格式类似 df -h 命令",
+	Long:  "显示所有磁盘分区的使用情况，按使用率降序排列，输出格式类似 df -h 命令",
 	Run: func(cmd *cobra.Command, args []string) {
 		display.Clear()
-		display.PrintHeader("💿 磁盘使用情况 (df -h)")
+		display.PrintHeader("💿 磁盘使用情况 (df -h) - 按使用率降序")
 
 		diskInfo := monitor.GetDiskInfo()
 		display.PrintDiskInfoDetailed(diskInfo)

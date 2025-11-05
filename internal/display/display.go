@@ -199,10 +199,10 @@ func PrintMemoryInfoDetailed(info monitor.MemoryInfo) {
 
 // PrintDiskInfo 打印磁盘信息（简洁版，类似 df -h）
 func PrintDiskInfo(info monitor.DiskInfo) {
-	colorTitle.Println("💿 磁盘 (df -h)")
+	colorTitle.Println("💿 磁盘 (按使用率排序)")
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"文件系统", "容量", "已用", "可用", "已用%", "挂载点"})
+	table.SetHeader([]string{"文件系统", "容量", "已用", "可用", "已用% ▼", "挂载点"})
 	table.SetBorder(false)
 	table.SetRowLine(false)
 	table.SetAutoWrapText(false)
@@ -234,11 +234,11 @@ func PrintDiskInfo(info monitor.DiskInfo) {
 // PrintDiskInfoDetailed 打印磁盘详细信息（完整版 df -h）
 func PrintDiskInfoDetailed(info monitor.DiskInfo) {
 	fmt.Println()
-	colorTitle.Println("文件系统磁盘使用情况 (Filesystem disk space usage)")
+	colorTitle.Println("文件系统磁盘使用情况 (按使用率降序排列)")
 	fmt.Println()
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"文件系统", "类型", "容量", "已用", "可用", "已用%", "挂载点"})
+	table.SetHeader([]string{"文件系统", "类型", "容量", "已用", "可用", "已用% ▼", "挂载点"})
 	table.SetBorder(true)
 	table.SetRowLine(false)
 	table.SetAutoWrapText(false)

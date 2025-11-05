@@ -16,6 +16,10 @@
                 <span class="status-indicator" id="status"></span>
                 <span id="last-update">连接中...</span>
             </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                <button class="control-btn" onclick="expandAll()">📖 全部展开</button>
+                <button class="control-btn" onclick="collapseAll()">📕 全部折叠</button>
+            </div>
         </header>
 
         <!-- System Info -->
@@ -45,7 +49,11 @@
         <div class="grid-2">
             <!-- CPU -->
             <section class="card">
-                <h2>🔥 CPU</h2>
+                <h2 class="card-header" onclick="toggleCard(this)">
+                    🔥 CPU
+                    <span class="collapse-icon">▼</span>
+                </h2>
+                <div class="card-content">
                 <div class="metric">
                     <div class="metric-header">
                         <span class="label">使用率</span>
@@ -65,11 +73,16 @@
                         <span class="value" id="cpu-load">-</span>
                     </div>
                 </div>
+                </div>
             </section>
 
             <!-- Memory -->
             <section class="card">
-                <h2>💾 内存</h2>
+                <h2 class="card-header" onclick="toggleCard(this)">
+                    💾 内存
+                    <span class="collapse-icon">▼</span>
+                </h2>
+                <div class="card-content">
                 <div class="metric">
                     <div class="metric-header">
                         <span class="label">物理内存</span>
@@ -88,19 +101,25 @@
                         <div class="progress-fill" id="swap-bar" style="width: 0%"></div>
                     </div>
                 </div>
+                </div>
             </section>
         </div>
 
         <!-- Process -->
         <section class="card">
-            <h2>⚙️ 进程 (Top 10 CPU)</h2>
+            <h2 class="card-header" onclick="toggleCard(this)">
+                ⚙️ 进程 (Top 10 CPU)
+                <span class="collapse-icon">▼</span>
+            </h2>
+            <div class="card-content">
+            <div class="section-hint">按 CPU 使用率降序排列</div>
             <div class="table-container">
                 <table id="process-table">
                     <thead>
                         <tr>
                             <th>PID</th>
                             <th>用户</th>
-                            <th>CPU%</th>
+                            <th>CPU% ▼</th>
                             <th>内存</th>
                             <th>命令</th>
                         </tr>
@@ -108,42 +127,63 @@
                     <tbody id="process-tbody"></tbody>
                 </table>
             </div>
+            </div>
         </section>
 
         <!-- Disk -->
         <section class="card">
-            <h2>💿 磁盘空间</h2>
+            <h2 class="card-header" onclick="toggleCard(this)">
+                💿 磁盘空间
+                <span class="collapse-icon">▼</span>
+            </h2>
+            <div class="card-content">
             <div class="section-hint">显示所有文件系统的使用情况（类似 df -h）</div>
             <div class="table-container">
                 <div id="disk-list"></div>
+            </div>
             </div>
         </section>
 
         <!-- Ports -->
         <section class="card">
-            <h2>🔌 监听端口</h2>
+            <h2 class="card-header" onclick="toggleCard(this)">
+                🔌 监听端口
+                <span class="collapse-icon">▼</span>
+            </h2>
+            <div class="card-content">
             <div class="section-hint">显示正在监听的网络端口和对应进程</div>
             <div class="table-container">
                 <div id="port-list"></div>
+            </div>
             </div>
         </section>
 
         <!-- Docker -->
         <section class="card">
-            <h2>🐳 Docker 容器</h2>
+            <h2 class="card-header" onclick="toggleCard(this)">
+                🐳 Docker 容器
+                <span class="collapse-icon">▼</span>
+            </h2>
+            <div class="card-content">
             <div class="docker-header">
                 <span id="docker-status">检查中...</span>
             </div>
             <div class="table-container">
                 <div id="docker-list"></div>
             </div>
+            </div>
         </section>
 
         <!-- Network -->
         <section class="card">
-            <h2>🌐 网络统计</h2>
+            <h2 class="card-header" onclick="toggleCard(this)">
+                🌐 网络统计
+                <span class="collapse-icon">▼</span>
+            </h2>
+            <div class="card-content">
             <div class="section-hint">显示网络接口流量统计（累计值）</div>
             <div id="network-list"></div>
+            </div>
         </section>
 
         <!-- Footer -->

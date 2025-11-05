@@ -123,10 +123,13 @@ function updateProgressBar(id, percent) {
     }
 }
 
-// 更新磁盘列表（df -h 风格）
+// 更新磁盘列表（df -h 风格，按使用率降序）
 function updateDiskList(partitions) {
     const container = document.getElementById('disk-list');
     container.innerHTML = '';
+    
+    // 按使用率降序排序（后端已排序，这里再确保一次）
+    partitions.sort((a, b) => b.UsedPercent - a.UsedPercent);
     
     // 创建表格
     const table = document.createElement('table');
@@ -137,7 +140,7 @@ function updateDiskList(partitions) {
                 <th>容量</th>
                 <th>已用</th>
                 <th>可用</th>
-                <th>已用%</th>
+                <th>已用% ▼</th>
                 <th>挂载点</th>
             </tr>
         </thead>
@@ -361,9 +364,54 @@ function truncate(str, len) {
     return str.substring(0, len - 3) + '...';
 }
 
+// 折叠/展开卡片
+function toggleCard(header) {
+    const content = header.nextElementSibling;
+    header.classList.toggle('collapsed');
+    content.classList.toggle('collapsed');
+    
+    // 保存折叠状态到 localStorage
+    const cardTitle = header.textContent.trim().split('\n')[0];
+    const isCollapsed = header.classList.contains('collapsed');
+    localStorage.setItem(`card-${cardTitle}`, isCollapsed ? 'collapsed' : 'expanded');
+}
+
+// 恢复折叠状态
+function restoreCardStates() {
+    document.querySelectorAll('.card-header').forEach(header => {
+        const cardTitle = header.textContent.trim().split('\n')[0];
+        const state = localStorage.getItem(`card-${cardTitle}`);
+        if (state === 'collapsed') {
+            header.classList.add('collapsed');
+            header.nextElementSibling.classList.add('collapsed');
+        }
+    });
+}
+
+// 全部展开
+function expandAll() {
+    document.querySelectorAll('.card-header').forEach(header => {
+        header.classList.remove('collapsed');
+        header.nextElementSibling.classList.remove('collapsed');
+        const cardTitle = header.textContent.trim().split('\n')[0];
+        localStorage.setItem(`card-${cardTitle}`, 'expanded');
+    });
+}
+
+// 全部折叠
+function collapseAll() {
+    document.querySelectorAll('.card-header').forEach(header => {
+        header.classList.add('collapsed');
+        header.nextElementSibling.classList.add('collapsed');
+        const cardTitle = header.textContent.trim().split('\n')[0];
+        localStorage.setItem(`card-${cardTitle}`, 'collapsed');
+    });
+}
+
 // 页面加载时连接
 window.addEventListener('load', () => {
     connectWebSocket();
+    restoreCardStates();
 });
 
 // 页面卸载时关闭连接
