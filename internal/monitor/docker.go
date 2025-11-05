@@ -2,11 +2,11 @@ package monitor
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -27,7 +27,7 @@ func GetDockerInfo() DockerInfo {
 	}
 
 	// 获取所有容器
-	containers, err := cli.ContainerList(ctx, container.ListOptions{All: true})
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
 	if err != nil {
 		return DockerInfo{Available: false, Timestamp: time.Now()}
 	}
@@ -64,7 +64,7 @@ func GetContainerDetail(containerID string) ContainerInfo {
 	defer cli.Close()
 
 	// 获取容器列表
-	containers, err := cli.ContainerList(ctx, container.ListOptions{All: true})
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
 	if err != nil {
 		return ContainerInfo{}
 	}
@@ -106,7 +106,7 @@ func getContainerInfo(ctx context.Context, cli *client.Client, ctr types.Contain
 			defer stats.Body.Close()
 
 			var v types.StatsJSON
-			if err := stats.Body.Read(&v); err == nil {
+			if err := json.NewDecoder(stats.Body).Decode(&v); err == nil {
 				// CPU 使用率
 				cpuDelta := float64(v.CPUStats.CPUUsage.TotalUsage - v.PreCPUStats.CPUUsage.TotalUsage)
 				systemDelta := float64(v.CPUStats.SystemUsage - v.PreCPUStats.SystemUsage)
