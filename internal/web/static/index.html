@@ -16,9 +16,10 @@
                 <span class="status-indicator" id="status"></span>
                 <span id="last-update">连接中...</span>
             </div>
-            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <button class="control-btn" onclick="expandAll()">📖 全部展开</button>
                 <button class="control-btn" onclick="collapseAll()">📕 全部折叠</button>
+                <button class="control-btn" id="theme-toggle" onclick="toggleTheme()">☀️ 浅色</button>
             </div>
         </header>
 
@@ -113,6 +114,9 @@
             </h2>
             <div class="card-content">
             <div class="section-hint">按 CPU 使用率降序排列</div>
+            <div class="search-box">
+                <input type="text" id="process-search" placeholder="🔍 搜索进程名、用户或 PID..." oninput="updateProcessTable(currentData?.process || [])">
+            </div>
             <div class="table-container">
                 <table id="process-table">
                     <thead>
@@ -152,6 +156,9 @@
             </h2>
             <div class="card-content">
             <div class="section-hint">显示正在监听的网络端口和对应进程</div>
+            <div class="search-box">
+                <input type="text" id="port-search" placeholder="🔍 搜索端口、进程或协议..." oninput="updatePortList(currentData?.ports?.Listening || [])">
+            </div>
             <div class="table-container">
                 <div id="port-list"></div>
             </div>

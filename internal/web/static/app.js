@@ -1,35 +1,86 @@
 // WebSocket 连接
 let ws = null;
 let reconnectTimer = null;
+let reconnectAttempts = 0;
+let currentData = {}; // 存储当前数据，用于搜索过滤
+const MAX_RECONNECT_ATTEMPTS = 10;
+const RECONNECT_INTERVAL = 3000;
 
 // 连接 WebSocket
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws?interval=2`;
     
-    ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
-        console.log('WebSocket 连接成功');
-        updateStatus(true);
+    try {
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+            console.log('WebSocket 连接成功');
+            reconnectAttempts = 0; // 重置重连次数
+            updateStatus(true);
+            hideReconnectNotice();
+            clearTimeout(reconnectTimer);
+        };
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            updateUI(data);
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket 错误:', error);
+            updateStatus(false);
+        };
+        
+        ws.onclose = () => {
+            console.log('WebSocket 连接关闭');
+            updateStatus(false);
+            attemptReconnect();
+        };
+    } catch (error) {
+        console.error('无法创建 WebSocket:', error);
+        updateStatus(false);
+        attemptReconnect();
+    }
+}
+
+// 尝试重连
+function attemptReconnect() {
+    if (reconnectTimer) {
         clearTimeout(reconnectTimer);
-    };
+    }
     
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        updateUI(data);
-    };
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        showReconnectNotice('连接失败次数过多，请刷新页面或检查服务器状态', true);
+        return;
+    }
     
-    ws.onerror = (error) => {
-        console.error('WebSocket 错误:', error);
-        updateStatus(false);
-    };
+    reconnectAttempts++;
+    showReconnectNotice(`正在尝试重新连接... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`, false);
     
-    ws.onclose = () => {
-        console.log('WebSocket 连接关闭，3秒后重连...');
-        updateStatus(false);
-        reconnectTimer = setTimeout(connectWebSocket, 3000);
-    };
+    reconnectTimer = setTimeout(connectWebSocket, RECONNECT_INTERVAL);
+}
+
+// 显示重连提示
+function showReconnectNotice(message, isError) {
+    let notice = document.getElementById('reconnect-notice');
+    if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'reconnect-notice';
+        document.body.appendChild(notice);
+    }
+    
+    notice.textContent = message;
+    notice.className = isError ? 'reconnect-notice error' : 'reconnect-notice warning';
+    notice.style.display = 'block';
+}
+
+// 隐藏重连提示
+function hideReconnectNotice() {
+    const notice = document.getElementById('reconnect-notice');
+    if (notice) {
+        notice.style.display = 'none';
+    }
 }
 
 // 更新连接状态
@@ -48,6 +99,7 @@ function updateStatus(connected) {
 
 // 更新界面
 function updateUI(data) {
+    currentData = data; // 保存当前数据
     document.getElementById('last-update').textContent = `最后更新: ${new Date().toLocaleTimeString()}`;
     
     // 系统信息
@@ -207,15 +259,31 @@ function updatePortList(ports) {
     const container = document.getElementById('port-list');
     if (!container) return;
     
-    container.innerHTML = '';
+    const searchTerm = (document.getElementById('port-search')?.value || '').toLowerCase();
     
     if (!ports || ports.length === 0) {
         container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">未检测到监听端口</div>';
         return;
     }
     
+    // 过滤端口
+    const filteredPorts = searchTerm
+        ? ports.filter(p =>
+            p.Port.toString().includes(searchTerm) ||
+            (p.ProcessName && p.ProcessName.toLowerCase().includes(searchTerm)) ||
+            (p.Address && p.Address.includes(searchTerm)) ||
+            p.Protocol.toLowerCase().includes(searchTerm) ||
+            (p.PID && p.PID.toString().includes(searchTerm))
+          )
+        : ports;
+    
+    if (filteredPorts.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">未找到匹配的端口</div>';
+        return;
+    }
+    
     // 按端口号排序
-    ports.sort((a, b) => a.Port - b.Port);
+    filteredPorts.sort((a, b) => a.Port - b.Port);
     
     // 创建表格
     const table = document.createElement('table');
@@ -230,7 +298,7 @@ function updatePortList(ports) {
             </tr>
         </thead>
         <tbody>
-            ${ports.map(port => `
+            ${filteredPorts.map(port => `
                 <tr>
                     <td class="nowrap"><strong>${port.Port}</strong></td>
                     <td class="nowrap">${port.Protocol.toUpperCase()}</td>
@@ -241,6 +309,7 @@ function updatePortList(ports) {
             `).join('')}
         </tbody>
     `;
+    container.innerHTML = '';
     container.appendChild(table);
 }
 
@@ -315,9 +384,24 @@ function updateDockerList(docker) {
 // 更新进程表格
 function updateProcessTable(processes) {
     const tbody = document.getElementById('process-tbody');
-    tbody.innerHTML = '';
+    const searchTerm = (document.getElementById('process-search')?.value || '').toLowerCase();
     
-    processes.forEach(p => {
+    // 过滤进程
+    const filteredProcesses = searchTerm
+        ? processes.filter(p =>
+            p.Name.toLowerCase().includes(searchTerm) ||
+            p.Username.toLowerCase().includes(searchTerm) ||
+            p.PID.toString().includes(searchTerm)
+          )
+        : processes;
+    
+    if (filteredProcesses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">未找到匹配的进程</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    filteredProcesses.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.PID}</td>
@@ -408,16 +492,47 @@ function collapseAll() {
     });
 }
 
+// 主题切换
+function toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // 更新按钮文本
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = newTheme === 'dark' ? '☀️ 浅色' : '🌙 深色';
+    }
+}
+
+// 恢复主题设置
+function restoreTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
+    
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = savedTheme === 'dark' ? '☀️ 浅色' : '🌙 深色';
+    }
+}
+
 // 页面加载时连接
 window.addEventListener('load', () => {
     connectWebSocket();
     restoreCardStates();
+    restoreTheme();
 });
 
 // 页面卸载时关闭连接
 window.addEventListener('beforeunload', () => {
     if (ws) {
         ws.close();
+    }
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
     }
 });
 
