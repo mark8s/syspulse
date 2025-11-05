@@ -197,41 +197,96 @@ func PrintMemoryInfoDetailed(info monitor.MemoryInfo) {
 	}
 }
 
-// PrintDiskInfo 打印磁盘信息（简洁版）
+// PrintDiskInfo 打印磁盘信息（简洁版，类似 df -h）
 func PrintDiskInfo(info monitor.DiskInfo) {
-	colorTitle.Println("💿 磁盘")
+	colorTitle.Println("💿 磁盘 (df -h)")
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"文件系统", "容量", "已用", "可用", "已用%", "挂载点"})
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetAutoWrapText(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColumnAlignment([]int{
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+	})
 
 	for _, partition := range info.Partitions {
-		fmt.Printf("  ")
-		colorLabel.Printf("%s ", partition.Mountpoint)
-		colorValue.Printf("%s / %s ", formatBytes(partition.Used), formatBytes(partition.Total))
-		printPercentWithBar(partition.UsedPercent, 25)
+		table.Append([]string{
+			partition.Device,
+			formatBytes(partition.Total),
+			formatBytes(partition.Used),
+			formatBytes(partition.Free),
+			fmt.Sprintf("%.0f%%", partition.UsedPercent),
+			partition.Mountpoint,
+		})
 	}
+
+	table.Render()
 }
 
-// PrintDiskInfoDetailed 打印磁盘详细信息
+// PrintDiskInfoDetailed 打印磁盘详细信息（完整版 df -h）
 func PrintDiskInfoDetailed(info monitor.DiskInfo) {
+	fmt.Println()
+	colorTitle.Println("文件系统磁盘使用情况 (Filesystem disk space usage)")
+	fmt.Println()
+
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"挂载点", "设备", "文件系统", "总容量", "已用", "可用", "使用率"})
+	table.SetHeader([]string{"文件系统", "类型", "容量", "已用", "可用", "已用%", "挂载点"})
 	table.SetBorder(true)
 	table.SetRowLine(false)
 	table.SetAutoWrapText(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColumnAlignment([]int{
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+	})
 
 	for _, partition := range info.Partitions {
-		usage := fmt.Sprintf("%.1f%%", partition.UsedPercent)
+		// 根据使用率设置颜色提示
+		usageStr := fmt.Sprintf("%.0f%%", partition.UsedPercent)
+
 		table.Append([]string{
-			partition.Mountpoint,
 			partition.Device,
 			partition.Fstype,
 			formatBytes(partition.Total),
 			formatBytes(partition.Used),
 			formatBytes(partition.Free),
-			usage,
+			usageStr,
+			partition.Mountpoint,
 		})
 	}
 
 	table.Render()
+
+	// 添加警告提示
+	fmt.Println()
+	hasWarning := false
+	for _, partition := range info.Partitions {
+		if partition.UsedPercent >= 90 {
+			colorError.Printf("⚠️  警告: %s 使用率已达 %.0f%%，空间不足！\n", partition.Mountpoint, partition.UsedPercent)
+			hasWarning = true
+		} else if partition.UsedPercent >= 80 {
+			colorWarning.Printf("⚠️  提示: %s 使用率已达 %.0f%%，建议清理\n", partition.Mountpoint, partition.UsedPercent)
+			hasWarning = true
+		}
+	}
+
+	if !hasWarning {
+		colorSuccess.Println("✅ 所有磁盘空间充足")
+	}
 }
 
 // PrintNetworkInfo 打印网络信息（简洁版）
@@ -419,7 +474,7 @@ func PrintDockerInfoDetailed(info monitor.DockerInfo) {
 
 	fmt.Println()
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "容器名", "镜像", "状态", "CPU%", "内存", "网络 I/O", "运行时长"})
+	table.SetHeader([]string{"ID", "容器名", "镜像", "端口", "状态", "CPU%", "内存", "运行时长"})
 	table.SetBorder(true)
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
@@ -427,38 +482,64 @@ func PrintDockerInfoDetailed(info monitor.DockerInfo) {
 
 	for _, c := range info.Containers {
 		name := c.Name
-		if len(name) > 18 {
-			name = name[:15] + "..."
+		if len(name) > 15 {
+			name = name[:12] + "..."
 		}
 
 		image := c.Image
-		if len(image) > 20 {
-			image = image[:17] + "..."
+		if len(image) > 18 {
+			image = image[:15] + "..."
+		}
+
+		// 格式化端口映射
+		portStr := formatPorts(c.Ports)
+		if portStr == "" {
+			portStr = "-"
 		}
 
 		cpuStr := "-"
 		memStr := "-"
-		netStr := "-"
 
 		if c.State == "running" {
 			cpuStr = fmt.Sprintf("%.1f%%", c.CPUPercent)
 			memStr = fmt.Sprintf("%.0f MB", c.MemoryUsageMB)
-			netStr = fmt.Sprintf("↑%.1fM ↓%.1fM", c.NetOutputMB, c.NetInputMB)
 		}
 
 		table.Append([]string{
 			c.ID,
 			name,
 			image,
+			portStr,
 			c.Status,
 			cpuStr,
 			memStr,
-			netStr,
 			c.Uptime,
 		})
 	}
 
 	table.Render()
+}
+
+// formatPorts 格式化端口映射
+func formatPorts(ports []monitor.PortMapping) string {
+	if len(ports) == 0 {
+		return ""
+	}
+
+	var portStrs []string
+	for _, p := range ports {
+		if p.PublicPort > 0 {
+			portStrs = append(portStrs, fmt.Sprintf("%d->%d/%s", p.PublicPort, p.PrivatePort, p.Type))
+		} else {
+			portStrs = append(portStrs, fmt.Sprintf("%d/%s", p.PrivatePort, p.Type))
+		}
+	}
+
+	// 只显示前2个端口，避免太长
+	if len(portStrs) > 2 {
+		return strings.Join(portStrs[:2], ", ") + "..."
+	}
+	return strings.Join(portStrs, ", ")
 }
 
 // PrintContainerDetail 打印容器详情

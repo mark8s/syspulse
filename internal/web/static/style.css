@@ -201,17 +201,44 @@ body {
 }
 
 /* Disk List */
-.disk-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 10px;
+.percent-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
 }
 
-.disk-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+.percent-badge.danger {
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--danger);
+}
+
+.percent-badge.warning {
+    background: rgba(243, 156, 18, 0.2);
+    color: var(--warning);
+}
+
+.percent-badge:not(.warning):not(.danger) {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--success);
+}
+
+.progress-bar-mini {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+code {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--primary);
 }
 
 /* Network List */
@@ -238,33 +265,21 @@ body {
     text-align: center;
 }
 
-.docker-item {
-    display: grid;
-    grid-template-columns: 2fr 3fr 2fr 1fr 1fr;
-    gap: 15px;
-    padding: 15px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.docker-item .name {
-    font-weight: bold;
-    color: var(--primary);
-}
-
-.docker-item .image {
-    color: var(--text-muted);
-    font-size: 0.9em;
-}
-
-.docker-item .status {
+.status-running {
     color: var(--success);
 }
 
-.docker-item .status.stopped {
+.status-stopped {
     color: var(--text-muted);
+}
+
+.port-badge {
+    padding: 2px 8px;
+    background: rgba(52, 152, 219, 0.2);
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: var(--primary);
+    font-family: monospace;
 }
 
 /* Table */

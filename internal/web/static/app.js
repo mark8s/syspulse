@@ -123,32 +123,52 @@ function updateProgressBar(id, percent) {
     }
 }
 
-// 更新磁盘列表
+// 更新磁盘列表（df -h 风格）
 function updateDiskList(partitions) {
     const container = document.getElementById('disk-list');
     container.innerHTML = '';
     
-    partitions.forEach(partition => {
-        const percent = partition.UsedPercent.toFixed(1);
-        const used = formatBytes(partition.Used);
-        const total = formatBytes(partition.Total);
-        
-        const div = document.createElement('div');
-        div.className = 'disk-item';
-        div.innerHTML = `
-            <div class="disk-header">
-                <span class="label">${partition.Mountpoint}</span>
-                <span class="value">${used} / ${total} (${percent}%)</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill ${getPercentClass(percent)}" style="width: ${percent}%"></div>
-            </div>
-            <div style="margin-top: 5px; font-size: 0.85em; color: var(--text-muted);">
-                ${partition.Device} (${partition.Fstype})
-            </div>
-        `;
-        container.appendChild(div);
-    });
+    // 创建表格
+    const table = document.createElement('table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>文件系统</th>
+                <th>容量</th>
+                <th>已用</th>
+                <th>可用</th>
+                <th>已用%</th>
+                <th>挂载点</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${partitions.map(partition => {
+                const percent = partition.UsedPercent.toFixed(0);
+                const percentClass = getPercentClass(partition.UsedPercent);
+                const used = formatBytes(partition.Used);
+                const total = formatBytes(partition.Total);
+                const free = formatBytes(partition.Free);
+                
+                return `
+                    <tr>
+                        <td><code>${partition.Device}</code></td>
+                        <td>${total}</td>
+                        <td>${used}</td>
+                        <td>${free}</td>
+                        <td>
+                            <span class="percent-badge ${percentClass}">${percent}%</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill ${percentClass}" style="width: ${percent}%"></div>
+                            </div>
+                        </td>
+                        <td><strong>${partition.Mountpoint}</strong></td>
+                    </tr>
+                `;
+            }).join('')}
+        </tbody>
+    `;
+    
+    container.appendChild(table);
 }
 
 // 更新网络列表
@@ -237,25 +257,57 @@ function updateDockerList(docker) {
         return;
     }
     
+    // 创建表格
+    const table = document.createElement('table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>容器名</th>
+                <th>镜像</th>
+                <th>端口</th>
+                <th>状态</th>
+                <th>CPU</th>
+                <th>内存</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${docker.Containers.map(c => {
+                const isRunning = c.State === 'running';
+                const statusClass = isRunning ? 'status-running' : 'status-stopped';
+                const cpu = isRunning ? `${c.CPUPercent.toFixed(1)}%` : '-';
+                const mem = isRunning ? `${c.MemoryUsageMB.toFixed(0)} MB` : '-';
+                
+                // 格式化端口
+                let ports = '-';
+                if (c.Ports && c.Ports.length > 0) {
+                    const portList = c.Ports.map(p => {
+                        if (p.PublicPort > 0) {
+                            return `${p.PublicPort}→${p.PrivatePort}`;
+                        }
+                        return `${p.PrivatePort}`;
+                    }).slice(0, 2); // 只显示前2个
+                    ports = portList.join(', ');
+                    if (c.Ports.length > 2) {
+                        ports += '...';
+                    }
+                }
+                
+                return `
+                    <tr>
+                        <td><strong>${truncate(c.Name, 20)}</strong></td>
+                        <td>${truncate(c.Image, 25)}</td>
+                        <td><span class="port-badge">${ports}</span></td>
+                        <td><span class="${statusClass}">${truncate(c.Status, 20)}</span></td>
+                        <td>${cpu}</td>
+                        <td>${mem}</td>
+                    </tr>
+                `;
+            }).join('')}
+        </tbody>
+    `;
+    
     container.innerHTML = '';
-    docker.Containers.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'docker-item';
-        
-        const isRunning = c.State === 'running';
-        const statusClass = isRunning ? '' : 'stopped';
-        const cpu = isRunning ? `${c.CPUPercent.toFixed(1)}%` : '-';
-        const mem = isRunning ? `${c.MemoryUsageMB.toFixed(0)} MB` : '-';
-        
-        div.innerHTML = `
-            <div class="name">${c.Name}</div>
-            <div class="image">${c.Image}</div>
-            <div class="status ${statusClass}">${c.Status}</div>
-            <div>CPU: ${cpu}</div>
-            <div>内存: ${mem}</div>
-        `;
-        container.appendChild(div);
-    });
+    container.appendChild(table);
 }
 
 // 更新进程表格

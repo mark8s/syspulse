@@ -89,12 +89,25 @@ func getContainerInfo(ctx context.Context, cli *client.Client, ctr types.Contain
 	created := time.Unix(ctr.Created, 0)
 	uptime := formatUptime(time.Since(created))
 
+	// 获取端口映射
+	var ports []PortMapping
+	for _, port := range ctr.Ports {
+		mapping := PortMapping{
+			PrivatePort: port.PrivatePort,
+			PublicPort:  port.PublicPort,
+			Type:        port.Type,
+			IP:          port.IP,
+		}
+		ports = append(ports, mapping)
+	}
+
 	info := ContainerInfo{
 		ID:      ctr.ID[:12],
 		Name:    name,
 		Image:   ctr.Image,
 		Status:  ctr.Status,
 		State:   ctr.State,
+		Ports:   ports,
 		Created: created,
 		Uptime:  uptime,
 	}

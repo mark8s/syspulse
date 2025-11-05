@@ -106,6 +106,7 @@ type ContainerInfo struct {
 	Image         string
 	Status        string
 	State         string
+	Ports         []PortMapping
 	CPUPercent    float64
 	MemoryUsageMB float64
 	MemoryLimitMB float64
@@ -116,4 +117,12 @@ type ContainerInfo struct {
 	BlockOutputMB float64
 	Created       time.Time
 	Uptime        string
+}
+
+// PortMapping 端口映射
+type PortMapping struct {
+	PrivatePort uint16
+	PublicPort  uint16
+	Type        string
+	IP          string
 }
