@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SysPulse - 系统资源监控</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚀 SysPulse</h1>
+            <p class="subtitle">实时系统资源监控</p>
+            <div class="status">
+                <span class="status-indicator" id="status"></span>
+                <span id="last-update">连接中...</span>
+            </div>
+        </header>
+
+        <!-- System Info -->
+        <section class="card">
+            <h2>🖥️ 系统信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">主机名</span>
+                    <span class="value" id="hostname">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">操作系统</span>
+                    <span class="value" id="os">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">内核版本</span>
+                    <span class="value" id="kernel">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">运行时长</span>
+                    <span class="value" id="uptime">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CPU & Memory -->
+        <div class="grid-2">
+            <!-- CPU -->
+            <section class="card">
+                <h2>🔥 CPU</h2>
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="label">使用率</span>
+                        <span class="value" id="cpu-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cpu-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">核心数</span>
+                        <span class="value" id="cpu-cores">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">负载 (1/5/15分钟)</span>
+                        <span class="value" id="cpu-load">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Memory -->
+            <section class="card">
+                <h2>💾 内存</h2>
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="label">物理内存</span>
+                        <span class="value" id="mem-usage">0 / 0 GB</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="mem-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="label">Swap</span>
+                        <span class="value" id="swap-usage">0 / 0 GB</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="swap-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Disk -->
+        <section class="card">
+            <h2>💿 磁盘</h2>
+            <div id="disk-list"></div>
+        </section>
+
+        <!-- Network -->
+        <section class="card">
+            <h2>🌐 网络</h2>
+            <div id="network-list"></div>
+        </section>
+
+        <!-- Ports -->
+        <section class="card">
+            <h2>🔌 监听端口</h2>
+            <div id="port-list"></div>
+        </section>
+
+        <!-- Docker -->
+        <section class="card">
+            <h2>🐳 Docker 容器</h2>
+            <div class="docker-header">
+                <span id="docker-status">检查中...</span>
+            </div>
+            <div id="docker-list"></div>
+        </section>
+
+        <!-- Process -->
+        <section class="card">
+            <h2>⚙️ 进程 (Top 10)</h2>
+            <div class="table-container">
+                <table id="process-table">
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>用户</th>
+                            <th>CPU%</th>
+                            <th>内存</th>
+                            <th>命令</th>
+                        </tr>
+                    </thead>
+                    <tbody id="process-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>SysPulse - 系统资源监控工具</p>
+            <p>自动刷新间隔: <span id="refresh-interval">2</span> 秒</p>
+        </footer>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+

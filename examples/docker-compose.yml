@@ -1,0 +1,54 @@
+# 用于测试 SysPulse Docker 监控功能的示例 docker-compose 配置
+
+version: '3.8'
+
+services:
+  # Web 服务器
+  nginx:
+    image: nginx:alpine
+    container_name: demo-nginx
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  # 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: demo-postgres
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: testdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis 缓存
+  redis:
+    image: redis:alpine
+    container_name: demo-redis
+    restart: unless-stopped
+
+  # 测试负载容器（高 CPU）
+  stress-cpu:
+    image: progrium/stress
+    container_name: demo-stress-cpu
+    command: --cpu 2 --timeout 300s
+    restart: unless-stopped
+
+  # 测试负载容器（高内存）
+  stress-memory:
+    image: progrium/stress
+    container_name: demo-stress-memory
+    command: --vm 1 --vm-bytes 512M --timeout 300s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+# 使用说明:
+# 1. 启动所有容器: docker-compose up -d
+# 2. 查看容器状态: docker-compose ps
+# 3. 使用 SysPulse 监控: syspulse docker --watch
+# 4. 停止所有容器: docker-compose down
+# 5. 清理所有数据: docker-compose down -v
+

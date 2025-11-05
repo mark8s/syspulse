@@ -1,0 +1,126 @@
+# SysPulse 配置文件示例
+# 注意: 当前版本暂不支持配置文件，这是未来版本的设计方向
+
+# 通用设置
+general:
+  # 刷新间隔（秒）
+  refresh_interval: 2
+  # 输出格式: text, json, yaml
+  output_format: text
+  # 是否显示颜色
+  color: true
+
+# CPU 监控设置
+cpu:
+  # 是否显示每个核心的使用率
+  show_per_core: true
+  # CPU 使用率告警阈值（百分比）
+  alert_threshold: 80
+
+# 内存监控设置
+memory:
+  # 内存使用率告警阈值（百分比）
+  alert_threshold: 90
+  # 是否显示缓存和缓冲区
+  show_cache: true
+
+# 磁盘监控设置
+disk:
+  # 磁盘使用率告警阈值（百分比）
+  alert_threshold: 85
+  # 要监控的挂载点（留空表示监控所有）
+  mount_points:
+    - /
+    - /home
+    - /var
+  # 要排除的文件系统类型
+  exclude_fs_types:
+    - tmpfs
+    - devtmpfs
+
+# 网络监控设置
+network:
+  # 要监控的网络接口（留空表示监控所有）
+  interfaces:
+    - eth0
+    - wlan0
+  # 是否排除回环接口
+  exclude_loopback: true
+
+# Docker 监控设置
+docker:
+  # Docker socket 路径
+  socket: unix:///var/run/docker.sock
+  # 是否只显示运行中的容器
+  running_only: false
+  # CPU 使用率告警阈值
+  cpu_alert: 80
+  # 内存使用率告警阈值
+  memory_alert: 90
+
+# 进程监控设置
+process:
+  # Top N 进程数量
+  top_n: 10
+  # 要排除的进程名
+  exclude_names:
+    - systemd
+    - kworker
+
+# 告警设置
+alerts:
+  # 是否启用告警
+  enabled: false
+  # 告警方式: email, webhook, slack
+  method: email
+  # 邮件告警设置
+  email:
+    smtp_server: smtp.gmail.com
+    smtp_port: 587
+    username: your-email@gmail.com
+    password: your-app-password
+    from: your-email@gmail.com
+    to:
+      - admin@example.com
+  # Webhook 告警设置
+  webhook:
+    url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+    method: POST
+    headers:
+      Content-Type: application/json
+
+# 日志设置
+logging:
+  # 是否启用日志
+  enabled: true
+  # 日志级别: debug, info, warn, error
+  level: info
+  # 日志文件路径
+  file: /var/log/syspulse/syspulse.log
+  # 日志最大大小（MB）
+  max_size: 100
+  # 保留的日志文件数
+  max_backups: 3
+  # 日志保留天数
+  max_age: 30
+
+# 性能设置
+performance:
+  # 数据采集间隔（秒）
+  collection_interval: 1
+  # 是否启用缓存
+  cache_enabled: true
+  # 缓存过期时间（秒）
+  cache_ttl: 5
+
+# 显示设置
+display:
+  # 进度条宽度（字符数）
+  progress_bar_width: 40
+  # 表格边框样式: single, double, rounded
+  table_border: single
+  # 是否显示图标
+  show_icons: true
+  # 颜色主题: default, dark, light
+  theme: default
+
