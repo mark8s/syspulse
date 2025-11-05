@@ -6,9 +6,10 @@ import (
 	"github.com/shirou/gopsutil/v3/disk"
 )
 
-// GetDiskInfo 获取磁盘信息
+// GetDiskInfo 获取磁盘信息（显示所有挂载点，包括虚拟文件系统）
 func GetDiskInfo() DiskInfo {
-	partitions, _ := disk.Partitions(false)
+	// true 表示包括所有文件系统，包括 tmpfs、devtmpfs、overlay 等
+	partitions, _ := disk.Partitions(true)
 
 	var partitionInfos []PartitionInfo
 

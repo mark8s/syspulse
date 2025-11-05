@@ -91,38 +91,9 @@
             </section>
         </div>
 
-        <!-- Disk -->
-        <section class="card">
-            <h2>💿 磁盘</h2>
-            <div id="disk-list"></div>
-        </section>
-
-        <!-- Network -->
-        <section class="card">
-            <h2>🌐 网络</h2>
-            <div id="network-list"></div>
-        </section>
-
-        <!-- Ports -->
-        <section class="card">
-            <h2>🔌 监听端口</h2>
-            <div id="port-list"></div>
-        </section>
-
-        <!-- Docker -->
-        <section class="card">
-            <h2>🐳 Docker 容器</h2>
-            <div class="docker-header">
-                <span id="docker-status">检查中...</span>
-            </div>
-            <div class="table-container">
-                <div id="docker-list"></div>
-            </div>
-        </section>
-
         <!-- Process -->
         <section class="card">
-            <h2>⚙️ 进程 (Top 10)</h2>
+            <h2>⚙️ 进程 (Top 10 CPU)</h2>
             <div class="table-container">
                 <table id="process-table">
                     <thead>
@@ -137,6 +108,42 @@
                     <tbody id="process-tbody"></tbody>
                 </table>
             </div>
+        </section>
+
+        <!-- Disk -->
+        <section class="card">
+            <h2>💿 磁盘空间</h2>
+            <div class="section-hint">显示所有文件系统的使用情况（类似 df -h）</div>
+            <div class="table-container">
+                <div id="disk-list"></div>
+            </div>
+        </section>
+
+        <!-- Ports -->
+        <section class="card">
+            <h2>🔌 监听端口</h2>
+            <div class="section-hint">显示正在监听的网络端口和对应进程</div>
+            <div class="table-container">
+                <div id="port-list"></div>
+            </div>
+        </section>
+
+        <!-- Docker -->
+        <section class="card">
+            <h2>🐳 Docker 容器</h2>
+            <div class="docker-header">
+                <span id="docker-status">检查中...</span>
+            </div>
+            <div class="table-container">
+                <div id="docker-list"></div>
+            </div>
+        </section>
+
+        <!-- Network -->
+        <section class="card">
+            <h2>🌐 网络统计</h2>
+            <div class="section-hint">显示网络接口流量统计（累计值）</div>
+            <div id="network-list"></div>
         </section>
 
         <!-- Footer -->

@@ -151,17 +151,17 @@ function updateDiskList(partitions) {
                 
                 return `
                     <tr>
-                        <td><code>${partition.Device}</code></td>
-                        <td>${total}</td>
-                        <td>${used}</td>
-                        <td>${free}</td>
-                        <td>
+                        <td class="breakable"><code>${partition.Device}</code></td>
+                        <td class="nowrap">${total}</td>
+                        <td class="nowrap">${used}</td>
+                        <td class="nowrap">${free}</td>
+                        <td class="nowrap">
                             <span class="percent-badge ${percentClass}">${percent}%</span>
                             <div class="progress-bar-mini">
                                 <div class="progress-fill ${percentClass}" style="width: ${percent}%"></div>
                             </div>
                         </td>
-                        <td><strong>${partition.Mountpoint}</strong></td>
+                        <td class="breakable"><strong>${partition.Mountpoint}</strong></td>
                     </tr>
                 `;
             }).join('')}
@@ -181,15 +181,17 @@ function updateNetworkList(interfaces) {
             const div = document.createElement('div');
             div.className = 'network-item';
             div.innerHTML = `
-                <div style="display: flex; justify-content: space-between;">
-                    <span class="label">${iface.Name}</span>
-                    <span class="value">${iface.Addrs[0]}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <strong style="color: var(--primary); font-size: 1.1em;">${iface.Name}</strong>
+                        <span style="margin-left: 15px; color: var(--text);">${iface.Addrs[0]}</span>
+                    </div>
                 </div>
                 <div class="network-stats">
-                    <span>↑ 发送: ${formatBytes(iface.BytesSent)}</span>
-                    <span>↓ 接收: ${formatBytes(iface.BytesRecv)}</span>
-                    <span>发送包: ${iface.PacketsSent.toLocaleString()}</span>
-                    <span>接收包: ${iface.PacketsRecv.toLocaleString()}</span>
+                    <span><strong>📤 发送:</strong> ${formatBytes(iface.BytesSent)}</span>
+                    <span><strong>📥 接收:</strong> ${formatBytes(iface.BytesRecv)}</span>
+                    <span><strong>📦 发送包:</strong> ${iface.PacketsSent.toLocaleString()}</span>
+                    <span><strong>📦 接收包:</strong> ${iface.PacketsRecv.toLocaleString()}</span>
                 </div>
             `;
             container.appendChild(div);
@@ -227,11 +229,11 @@ function updatePortList(ports) {
         <tbody>
             ${ports.map(port => `
                 <tr>
-                    <td><strong>${port.Port}</strong></td>
-                    <td>${port.Protocol.toUpperCase()}</td>
-                    <td>${port.Address || '0.0.0.0'}</td>
-                    <td>${port.ProcessName || '-'} ${port.PID ? `(${port.PID})` : ''}</td>
-                    <td><span class="status-badge status-${port.State.toLowerCase()}">${port.State}</span></td>
+                    <td class="nowrap"><strong>${port.Port}</strong></td>
+                    <td class="nowrap">${port.Protocol.toUpperCase()}</td>
+                    <td class="nowrap">${port.Address || '0.0.0.0'}</td>
+                    <td class="nowrap">${port.ProcessName || '-'} ${port.PID ? `(${port.PID})` : ''}</td>
+                    <td class="nowrap"><span class="status-badge status-${port.State.toLowerCase()}">${port.State}</span></td>
                 </tr>
             `).join('')}
         </tbody>
@@ -257,7 +259,7 @@ function updateDockerList(docker) {
         return;
     }
     
-    // 创建表格
+    // 创建表格（显示完整内容，不省略）
     const table = document.createElement('table');
     table.innerHTML = `
         <thead>
@@ -277,7 +279,7 @@ function updateDockerList(docker) {
                 const cpu = isRunning ? `${c.CPUPercent.toFixed(1)}%` : '-';
                 const mem = isRunning ? `${c.MemoryUsageMB.toFixed(0)} MB` : '-';
                 
-                // 格式化端口
+                // 格式化端口（显示所有端口）
                 let ports = '-';
                 if (c.Ports && c.Ports.length > 0) {
                     const portList = c.Ports.map(p => {
@@ -285,19 +287,16 @@ function updateDockerList(docker) {
                             return `${p.PublicPort}→${p.PrivatePort}`;
                         }
                         return `${p.PrivatePort}`;
-                    }).slice(0, 2); // 只显示前2个
+                    });
                     ports = portList.join(', ');
-                    if (c.Ports.length > 2) {
-                        ports += '...';
-                    }
                 }
                 
                 return `
                     <tr>
-                        <td><strong>${truncate(c.Name, 20)}</strong></td>
-                        <td>${truncate(c.Image, 25)}</td>
-                        <td><span class="port-badge">${ports}</span></td>
-                        <td><span class="${statusClass}">${truncate(c.Status, 20)}</span></td>
+                        <td class="nowrap"><strong>${c.Name}</strong></td>
+                        <td class="breakable">${c.Image}</td>
+                        <td class="nowrap"><span class="port-badge">${ports}</span></td>
+                        <td class="nowrap"><span class="${statusClass}">${c.Status}</span></td>
                         <td>${cpu}</td>
                         <td>${mem}</td>
                     </tr>
@@ -319,10 +318,10 @@ function updateProcessTable(processes) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.PID}</td>
-            <td>${p.Username}</td>
+            <td class="nowrap">${p.Username}</td>
             <td><strong>${p.CPUPercent.toFixed(1)}%</strong></td>
             <td>${p.MemoryMB.toFixed(1)} MB</td>
-            <td>${truncate(p.Name, 40)}</td>
+            <td class="breakable" title="${p.Name}">${p.Name}</td>
         `;
         tbody.appendChild(tr);
     });
